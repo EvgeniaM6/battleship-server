@@ -14,7 +14,7 @@ import {
   TurnDataResp,
   UpdRoomStateDataResp,
   UpdWinnersDataResp,
-} from './request.model';
+} from './reqResp.model';
 
 export {
   ReqRespTypes,

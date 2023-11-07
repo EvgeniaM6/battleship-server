@@ -1,33 +1,41 @@
-import { WebSocketServer } from 'ws';
+import { IncomingMessage } from 'http';
+import WebSocket, { WebSocketServer } from 'ws';
+import { AppController } from './components';
 
 export class WSServer {
+  private appController = new AppController();
+
   constructor(port: number) {
-    const wss = new WebSocketServer({ port });
+    this.createWsServer(port);
+  }
 
-    const data = {
-      name: 'string',
-      index: 0,
-      error: false,
-      errorText: '',
-    };
-
-    const res = {
-      type: 'reg',
-      data: JSON.stringify(data),
-      id: 0,
-    };
-
-    const jsonMess = JSON.stringify(res);
-    console.log('jsonMess=', jsonMess);
-
-    wss.on('connection', (ws) => {
-      console.log('connection!');
-
-      ws.on('message', (data) => {
-        console.log('data=', data.toString());
-
-        ws.send(jsonMess);
-      });
+  private createWsServer(port: number) {
+    const wss: WebSocket.Server<typeof WebSocket, typeof IncomingMessage> = new WebSocketServer({
+      port,
     });
+
+    wss.on('connection', (ws: WebSocket) => this.handleWsConnection(ws));
+  }
+
+  private handleWsConnection(ws: WebSocket) {
+    console.log('connection!');
+    ws.on('message', (wsData: WebSocket.RawData) => this.handleWsMessage(ws, wsData));
+  }
+
+  private handleWsMessage(ws: WebSocket, wsData: WebSocket.RawData) {
+    const dataJson: string = wsData.toString();
+    console.log('dataJson=', dataJson);
+
+    const responsesArr: string[] = this.getResponseData(dataJson);
+
+    if (!responsesArr.length) return;
+
+    responsesArr.forEach((response: string) => {
+      ws.send(response);
+    });
+  }
+
+  private getResponseData(dataJson: string): string[] {
+    return this.appController.getResponseData(dataJson);
   }
 }
