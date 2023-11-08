@@ -7,6 +7,7 @@ import {
   RegDataReq,
   ReqRespTypes,
   RoomUser,
+  UpdRoomStateDataResp,
   WssResponse,
 } from '../models';
 import { Game } from './Game';
@@ -27,8 +28,7 @@ export class AppController {
       case ReqRespTypes.Reg:
         return this.userRegistration(dataObj as RegDataReq, wssClientId);
       case ReqRespTypes.CrtRoom:
-        this.createRoom(wssClientId);
-        return [];
+        return this.createRoom(wssClientId);
       case ReqRespTypes.AddUserToRoom:
         return this.addUserToRoom(dataObj as AddUserToRoomDataReq, wssClientId);
       default:
@@ -48,20 +48,25 @@ export class AppController {
     const responseJson: string = JSON.stringify(respObj);
 
     const resp: WssResponse = {
+      isRespForAll: false,
       usersIdsForRespArr: [clientId],
       responseJson,
     };
 
-    return [resp];
+    const roomsResp: WssResponse = this.getAllSingleRoomsResp();
+    return [resp, roomsResp];
   }
 
-  private createRoom(clientId: number): void {
+  private createRoom(clientId: number): WssResponse[] {
     const newRoomId: number = this.game.createNewRoom();
 
     const player: PlayersDB | null = this.getPlayerById(clientId);
-    if (!player) return;
+    if (!player) return [];
 
     this.addPlayerToRoomById(newRoomId, player);
+
+    const roomsResp: WssResponse = this.getAllSingleRoomsResp();
+    return [roomsResp];
   }
 
   private addUserToRoom(dataReqObj: AddUserToRoomDataReq, clientId: number): WssResponse[] {
@@ -89,6 +94,7 @@ export class AppController {
       const responseJson: string = JSON.stringify(respObj);
 
       const resp: WssResponse = {
+        isRespForAll: false,
         usersIdsForRespArr: [user.index],
         responseJson,
       };
@@ -104,5 +110,26 @@ export class AppController {
 
   private getPlayerById(playerId: number): PlayersDB | null {
     return this.usersManager.getPlayerById(playerId);
+  }
+
+  private getAllSingleRoomsResp(): WssResponse {
+    const singleRoomsArr: UpdRoomStateDataResp[] = this.game.getAllSingleRooms();
+    const dataRespJson = JSON.stringify(singleRoomsArr);
+
+    const respObj: ClientReqServerResp = {
+      type: ReqRespTypes.UpdRoom,
+      data: dataRespJson,
+      id: 0,
+    };
+
+    const responseJson: string = JSON.stringify(respObj);
+
+    const roomsResp: WssResponse = {
+      isRespForAll: true,
+      usersIdsForRespArr: [],
+      responseJson,
+    };
+
+    return roomsResp;
   }
 }

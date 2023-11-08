@@ -1,4 +1,4 @@
-import { PlayersDB, RoomData, RoomUser } from '../models';
+import { PlayersDB, RoomData, RoomUser, UpdRoomStateDataResp } from '../models';
 
 export class Game {
   private rooms: RoomData = {};
@@ -26,5 +26,15 @@ export class Game {
     this.rooms[roomId].push(roomUser);
 
     return this.rooms[roomId];
+  }
+
+  public getAllSingleRooms(): UpdRoomStateDataResp[] {
+    const rooms: UpdRoomStateDataResp[] = Object.entries(this.rooms).map(([roomId, roomUsers]) => {
+      return { roomId: Number(roomId), roomUsers };
+    });
+
+    return rooms.filter((room: UpdRoomStateDataResp) => {
+      return room.roomUsers.length > 1;
+    });
   }
 }
