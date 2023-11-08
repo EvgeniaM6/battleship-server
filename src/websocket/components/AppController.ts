@@ -8,6 +8,7 @@ import {
   ReqRespTypes,
   RoomUser,
   UpdRoomStateDataResp,
+  UpdWinnersDataResp,
   WssResponse,
 } from '../models';
 import { Game } from './Game';
@@ -54,7 +55,8 @@ export class AppController {
     };
 
     const roomsResp: WssResponse = this.getAllSingleRoomsResp();
-    return [resp, roomsResp];
+    const winnersResp: WssResponse = this.getAllWinnersResp();
+    return [resp, roomsResp, winnersResp];
   }
 
   private createRoom(clientId: number): WssResponse[] {
@@ -87,7 +89,7 @@ export class AppController {
 
       const dataRespJson: string = JSON.stringify(dataRespObj);
       const respObj: ClientReqServerResp = {
-        type: ReqRespTypes.Reg,
+        type: ReqRespTypes.CrtGame,
         data: dataRespJson,
         id: 0,
       };
@@ -114,22 +116,35 @@ export class AppController {
 
   private getAllSingleRoomsResp(): WssResponse {
     const singleRoomsArr: UpdRoomStateDataResp[] = this.game.getAllSingleRooms();
-    const dataRespJson = JSON.stringify(singleRoomsArr);
+
+    const roomsResp: WssResponse = this.getRespForAll(singleRoomsArr, ReqRespTypes.UpdRoom);
+    return roomsResp;
+  }
+
+  private getAllWinnersResp(): WssResponse {
+    const winnersArr: UpdWinnersDataResp[] = this.game.getWinners();
+
+    const winnersResp: WssResponse = this.getRespForAll(winnersArr, ReqRespTypes.UpdWinners);
+    return winnersResp;
+  }
+
+  private getRespForAll(respData: unknown, type: ReqRespTypes): WssResponse {
+    const dataRespJson: string = JSON.stringify(respData);
 
     const respObj: ClientReqServerResp = {
-      type: ReqRespTypes.UpdRoom,
+      type,
       data: dataRespJson,
       id: 0,
     };
 
     const responseJson: string = JSON.stringify(respObj);
 
-    const roomsResp: WssResponse = {
+    const wssResp: WssResponse = {
       isRespForAll: true,
       usersIdsForRespArr: [],
       responseJson,
     };
 
-    return roomsResp;
+    return wssResp;
   }
 }

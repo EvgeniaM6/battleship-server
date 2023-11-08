@@ -1,7 +1,8 @@
-import { PlayersDB, RoomData, RoomUser, UpdRoomStateDataResp } from '../models';
+import { PlayersDB, RoomData, RoomUser, UpdRoomStateDataResp, UpdWinnersDataResp } from '../models';
 
 export class Game {
   private rooms: RoomData = {};
+  private winners: UpdWinnersDataResp[] = [];
   private currentRoomId: number = 0;
 
   public createNewRoom(): number {
@@ -34,7 +35,11 @@ export class Game {
     });
 
     return rooms.filter((room: UpdRoomStateDataResp) => {
-      return room.roomUsers.length > 1;
+      return room.roomUsers.length === 1;
     });
+  }
+
+  public getWinners(): UpdWinnersDataResp[] {
+    return this.winners;
   }
 }
