@@ -1,4 +1,5 @@
 import { PlayersDB } from './db.model';
+import { RoomData, RoomUser } from './game.model';
 import {
   AddShipsDataReq,
   AddUserToRoomDataReq,
@@ -18,6 +19,7 @@ import {
   DataRequest,
   DataResponse,
 } from './reqResp.model';
+import { WssClients, WssResponse } from './websocket.model';
 
 export {
   ReqRespTypes,
@@ -38,4 +40,8 @@ export {
   TurnDataResp,
   FinishDataResp,
   PlayersDB,
+  RoomData,
+  WssClients,
+  RoomUser,
+  WssResponse,
 };
