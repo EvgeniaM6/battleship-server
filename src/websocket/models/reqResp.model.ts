@@ -15,23 +15,27 @@ export enum ReqRespTypes {
 
 export type ClientReqServerResp = {
   type: ReqRespTypes;
-  data:
-    | RegDataReq
-    | RegDataResp
-    | UpdWinnersDataResp[]
-    | ''
-    | AddUserToRoomDataReq
-    | AddUserToRoomDataResp
-    | UpdRoomStateDataResp[]
-    | AddShipsDataReq
-    | StartDataResp
-    | AttackDataReq
-    | AttackDataResp
-    | RandomAttackDataReq
-    | TurnDataResp
-    | FinishDataResp;
+  data: string;
   id: number;
 };
+
+export type DataRequest =
+  | RegDataReq
+  | ''
+  | AddUserToRoomDataReq
+  | AddShipsDataReq
+  | AttackDataReq
+  | RandomAttackDataReq;
+
+export type DataResponse =
+  | RegDataResp
+  | UpdWinnersDataResp[]
+  | AddUserToRoomDataResp
+  | UpdRoomStateDataResp[]
+  | StartDataResp
+  | AttackDataResp
+  | TurnDataResp
+  | FinishDataResp;
 
 export type RegDataReq = {
   name: string;

@@ -1,3 +1,4 @@
+import { PlayersDB } from './db.model';
 import {
   AddShipsDataReq,
   AddUserToRoomDataReq,
@@ -14,11 +15,15 @@ import {
   TurnDataResp,
   UpdRoomStateDataResp,
   UpdWinnersDataResp,
+  DataRequest,
+  DataResponse,
 } from './reqResp.model';
 
 export {
   ReqRespTypes,
   ClientReqServerResp,
+  DataRequest,
+  DataResponse,
   RegDataReq,
   RegDataResp,
   UpdWinnersDataResp,
@@ -32,4 +37,5 @@ export {
   RandomAttackDataReq,
   TurnDataResp,
   FinishDataResp,
+  PlayersDB,
 };
