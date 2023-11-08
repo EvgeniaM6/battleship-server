@@ -19,7 +19,7 @@ import {
   DataRequest,
   DataResponse,
 } from './reqResp.model';
-import { WssClients, WssResponse } from './websocket.model';
+import { WssClients, WssData, WssResponse } from './websocket.model';
 
 export {
   ReqRespTypes,
@@ -41,6 +41,7 @@ export {
   FinishDataResp,
   PlayersDB,
   RoomData,
+  WssData,
   WssClients,
   RoomUser,
   WssResponse,
