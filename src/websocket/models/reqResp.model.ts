@@ -63,7 +63,7 @@ export type AddUserToRoomDataResp = {
   idPlayer: number;
 };
 
-type RoomUsers = {
+export type RoomUsers = {
   name: string;
   index: number;
 };

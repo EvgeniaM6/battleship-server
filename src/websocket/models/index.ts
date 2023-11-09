@@ -1,5 +1,5 @@
 import { PlayersDB } from './db.model';
-import { RoomData, RoomUser } from './game.model';
+import { RoomData } from './game.model';
 import {
   AddShipsDataReq,
   AddUserToRoomDataReq,
@@ -19,6 +19,7 @@ import {
   DataRequest,
   DataResponse,
   Ship,
+  RoomUsers,
 } from './reqResp.model';
 import { Cell, Field, Row } from './gameField.model';
 import { WssClients, WssData, WssResponse } from './websocket.model';
@@ -45,7 +46,7 @@ export {
   RoomData,
   WssData,
   WssClients,
-  RoomUser,
+  RoomUsers,
   WssResponse,
   Cell,
   Row,

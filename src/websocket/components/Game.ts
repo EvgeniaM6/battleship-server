@@ -2,11 +2,11 @@ import {
   AddShipsDataReq,
   PlayersDB,
   RoomData,
-  RoomUser,
+  RoomUsers,
   UpdRoomStateDataResp,
   UpdWinnersDataResp,
 } from '../models';
-import { GameField } from './GameField';
+import { RoomUser } from './RoomUser';
 
 export class Game {
   private rooms: RoomData = {};
@@ -25,21 +25,12 @@ export class Game {
   }
 
   public addUserToRoom(roomId: number, player: PlayersDB): RoomUser[] {
-    const {
-      userData: { name },
-      userId,
-    } = player;
+    const { userId } = player;
 
     const isSamePlayer: boolean = this.rooms[roomId][0]?.index === userId;
     if (isSamePlayer) return this.rooms[roomId];
 
-    const roomUser: RoomUser = {
-      name,
-      index: userId,
-      gameField: null,
-      isTurn: !this.rooms[roomId],
-    };
-
+    const roomUser = new RoomUser(player);
     this.rooms[roomId].push(roomUser);
 
     this.deleteRoom(roomId, userId);
@@ -48,9 +39,15 @@ export class Game {
   }
 
   public getAllSingleRooms(): UpdRoomStateDataResp[] {
-    const rooms: UpdRoomStateDataResp[] = Object.entries(this.rooms).map(([roomId, roomUsers]) => {
-      return { roomId: Number(roomId), roomUsers };
-    });
+    const rooms: UpdRoomStateDataResp[] = Object.entries(this.rooms).map(
+      ([roomId, roomUsersArr]: [string, RoomUser[]]) => {
+        const roomUsers: RoomUsers[] = roomUsersArr.map((roomUser: RoomUser) => {
+          return { name: roomUser.name, index: roomUser.index };
+        });
+
+        return { roomId: Number(roomId), roomUsers };
+      }
+    );
 
     return rooms.filter((room: UpdRoomStateDataResp) => {
       return room.roomUsers.length === 1;
@@ -83,12 +80,10 @@ export class Game {
   public addShips(dataReqObj: AddShipsDataReq) {
     const { gameId, ships, indexPlayer } = dataReqObj;
 
-    const gameField = new GameField(ships);
-
     const room: RoomUser[] = this.rooms[gameId];
-    room[indexPlayer].gameField = gameField;
+    room[indexPlayer].addShips(ships);
 
-    const didAllPlayersAddShips: boolean = room.every((player) => player.gameField);
+    const didAllPlayersAddShips: boolean = room.every((player) => player.haveShips());
 
     if (!didAllPlayersAddShips) {
       return [];

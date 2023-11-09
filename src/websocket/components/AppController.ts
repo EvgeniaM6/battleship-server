@@ -9,13 +9,13 @@ import {
   RegDataReq,
   RegDataResp,
   ReqRespTypes,
-  RoomUser,
   StartDataResp,
   UpdRoomStateDataResp,
   UpdWinnersDataResp,
   WssResponse,
 } from '../models';
 import { Game } from './Game';
+import { RoomUser } from './RoomUser';
 import { UsersManager } from './UsersManager';
 
 export class AppController {
@@ -130,7 +130,7 @@ export class AppController {
     return room.map((player: RoomUser, i: number) => {
       const indexPlayer = i === 0 ? 1 : 0;
       const dataRespObj: StartDataResp = {
-        ships: player.gameField?.getShips() || [],
+        ships: player.getShipsArr(),
         currentPlayerIndex: indexPlayer,
       };
 
