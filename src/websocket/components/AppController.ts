@@ -4,8 +4,10 @@ import {
   AddUserToRoomDataResp,
   ClientReqServerResp,
   DataRequest,
+  DataResponse,
   PlayersDB,
   RegDataReq,
+  RegDataResp,
   ReqRespTypes,
   RoomUser,
   StartDataResp,
@@ -42,21 +44,8 @@ export class AppController {
   }
 
   private userRegistration(dataReqObj: RegDataReq, clientId: number): WssResponse[] {
-    const dataRespJson: string = this.usersManager.userRegistration(dataReqObj, clientId);
-
-    const respObj: ClientReqServerResp = {
-      type: ReqRespTypes.Reg,
-      data: dataRespJson,
-      id: 0,
-    };
-
-    const responseJson: string = JSON.stringify(respObj);
-
-    const resp: WssResponse = {
-      isRespForAll: false,
-      usersIdsForRespArr: [clientId],
-      responseJson,
-    };
+    const dataResp: RegDataResp = this.usersManager.userRegistration(dataReqObj, clientId);
+    const resp: WssResponse = this.getResponse(dataResp, ReqRespTypes.Reg, false, [clientId]);
 
     const roomsResp: WssResponse = this.getAllSingleRoomsResp();
     const winnersResp: WssResponse = this.getAllWinnersResp();
@@ -64,13 +53,11 @@ export class AppController {
   }
 
   private createRoom(clientId: number): WssResponse[] {
-    const newRoomId: number | undefined = this.game.createNewRoom(clientId);
+    const newRoomId: number | undefined = this.createNewRoom(clientId);
     if (newRoomId === undefined) return [];
 
-    const player: PlayersDB | null = this.getPlayerById(clientId);
-    if (!player) return [];
-
-    this.addPlayerToRoomById(newRoomId, player);
+    const usersInRoomArr: RoomUser[] = this.addPlayerToRoomById(newRoomId, clientId);
+    if (!usersInRoomArr.length) return [];
 
     const roomsResp: WssResponse = this.getAllSingleRoomsResp();
     return [roomsResp];
@@ -79,11 +66,7 @@ export class AppController {
   private addUserToRoom(dataReqObj: AddUserToRoomDataReq, clientId: number): WssResponse[] {
     const { indexRoom } = dataReqObj;
 
-    const player: PlayersDB | null = this.getPlayerById(clientId);
-    if (!player) return [];
-
-    const usersInRoomArr: RoomUser[] = this.addPlayerToRoomById(indexRoom, player);
-
+    const usersInRoomArr: RoomUser[] = this.addPlayerToRoomById(indexRoom, clientId);
     if (usersInRoomArr.length === 1) return [];
 
     const respArr: WssResponse[] = usersInRoomArr.map((user: RoomUser, i: number) => {
@@ -92,20 +75,7 @@ export class AppController {
         idPlayer: i,
       };
 
-      const dataRespJson: string = JSON.stringify(dataRespObj);
-      const respObj: ClientReqServerResp = {
-        type: ReqRespTypes.CrtGame,
-        data: dataRespJson,
-        id: 0,
-      };
-      const responseJson: string = JSON.stringify(respObj);
-
-      const resp: WssResponse = {
-        isRespForAll: false,
-        usersIdsForRespArr: [user.index],
-        responseJson,
-      };
-      return resp;
+      return this.getResponse(dataRespObj, ReqRespTypes.CrtGame, false, [user.index]);
     });
 
     const updRoomResp: WssResponse = this.getAllSingleRoomsResp();
@@ -114,7 +84,10 @@ export class AppController {
     return respArr;
   }
 
-  private addPlayerToRoomById(roomId: number, player: PlayersDB): RoomUser[] {
+  private addPlayerToRoomById(roomId: number, clientId: number): RoomUser[] {
+    const player: PlayersDB | null = this.getPlayerById(clientId);
+    if (!player) return [];
+
     return this.game.addUserToRoom(roomId, player);
   }
 
@@ -124,65 +97,48 @@ export class AppController {
 
   private getAllSingleRoomsResp(): WssResponse {
     const singleRoomsArr: UpdRoomStateDataResp[] = this.game.getAllSingleRooms();
-
-    const roomsResp: WssResponse = this.getRespForAll(singleRoomsArr, ReqRespTypes.UpdRoom);
-    return roomsResp;
+    return this.getResponse(singleRoomsArr, ReqRespTypes.UpdRoom, true, []);
   }
 
   private getAllWinnersResp(): WssResponse {
     const winnersArr: UpdWinnersDataResp[] = this.game.getWinners();
-
-    const winnersResp: WssResponse = this.getRespForAll(winnersArr, ReqRespTypes.UpdWinners);
-    return winnersResp;
+    return this.getResponse(winnersArr, ReqRespTypes.UpdWinners, true, []);
   }
 
-  private getRespForAll(respData: unknown, type: ReqRespTypes): WssResponse {
-    const dataRespJson: string = JSON.stringify(respData);
-
+  private getResponse(
+    respData: DataResponse,
+    type: ReqRespTypes,
+    isRespForAll: boolean,
+    usersIdsForRespArr: number[]
+  ): WssResponse {
     const respObj: ClientReqServerResp = {
       type,
-      data: dataRespJson,
+      data: JSON.stringify(respData),
       id: 0,
     };
 
-    const responseJson: string = JSON.stringify(respObj);
-
-    const wssResp: WssResponse = {
-      isRespForAll: true,
-      usersIdsForRespArr: [],
-      responseJson,
+    return {
+      isRespForAll,
+      usersIdsForRespArr,
+      responseJson: JSON.stringify(respObj),
     };
-
-    return wssResp;
   }
 
-  private addShips(dataReqObj: AddShipsDataReq) {
+  private addShips(dataReqObj: AddShipsDataReq): WssResponse[] {
     const room: RoomUser[] = this.game.addShips(dataReqObj);
 
-    const respArr: WssResponse[] = room.map((player: RoomUser, i: number) => {
+    return room.map((player: RoomUser, i: number) => {
       const indexPlayer = i === 0 ? 1 : 0;
       const dataRespObj: StartDataResp = {
         ships: player.gameField?.getShips() || [],
         currentPlayerIndex: indexPlayer,
       };
 
-      const dataRespJson: string = JSON.stringify(dataRespObj);
-      const respObj: ClientReqServerResp = {
-        type: ReqRespTypes.StartGame,
-        data: dataRespJson,
-        id: 0,
-      };
-
-      const responseJson: string = JSON.stringify(respObj);
-      const resp = {
-        isRespForAll: false,
-        usersIdsForRespArr: [room[i].index],
-        responseJson: responseJson,
-      };
-
-      return resp;
+      return this.getResponse(dataRespObj, ReqRespTypes.StartGame, false, [room[i].index]);
     });
+  }
 
-    return respArr;
+  private createNewRoom(clientId: number): number | undefined {
+    return this.game.createNewRoom(clientId);
   }
 }

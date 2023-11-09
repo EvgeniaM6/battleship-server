@@ -40,7 +40,10 @@ export class GameField {
     firstShipPart.isShipPart = true;
 
     for (let index = 1; index < length; index++) {
-      const otherShipPart = direction ? this.shipsMatrix[y + index][x] : this.shipsMatrix[y][x + index];
+      const otherShipPart = direction
+        ? this.shipsMatrix[y + index][x]
+        : this.shipsMatrix[y][x + index];
+
       otherShipPart.isShipPart = true;
 
       firstShipPart.otherShipParts.push(otherShipPart);
