@@ -60,7 +60,8 @@ export class AppController {
   }
 
   private createRoom(clientId: number): WssResponse[] {
-    const newRoomId: number = this.game.createNewRoom();
+    const newRoomId: number | undefined = this.game.createNewRoom(clientId);
+    if (newRoomId === undefined) return [];
 
     const player: PlayersDB | null = this.getPlayerById(clientId);
     if (!player) return [];
@@ -102,6 +103,9 @@ export class AppController {
       };
       return resp;
     });
+
+    const updRoomResp: WssResponse = this.getAllSingleRoomsResp();
+    respArr.push(updRoomResp);
 
     return respArr;
   }

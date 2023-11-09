@@ -5,7 +5,10 @@ export class Game {
   private winners: UpdWinnersDataResp[] = [];
   private currentRoomId: number = 0;
 
-  public createNewRoom(): number {
+  public createNewRoom(clientId: number): number | undefined {
+    const isCreatedRoomWithPlayer: boolean = this.checkIsCreatedRoomWithPlayer(clientId);
+    if (isCreatedRoomWithPlayer) return;
+
     const newRoomId = this.currentRoomId;
     this.rooms[newRoomId] = [];
 
@@ -19,12 +22,17 @@ export class Game {
       userId,
     } = player;
 
+    const isSamePlayer: boolean = this.rooms[roomId][0]?.index === userId;
+    if (isSamePlayer) return this.rooms[roomId];
+
     const roomUser: RoomUser = {
       name,
       index: userId,
     };
 
     this.rooms[roomId].push(roomUser);
+
+    this.deleteRoom(roomId, userId);
 
     return this.rooms[roomId];
   }
@@ -41,5 +49,24 @@ export class Game {
 
   public getWinners(): UpdWinnersDataResp[] {
     return this.winners;
+  }
+
+  private checkIsCreatedRoomWithPlayer(clientId: number): boolean {
+    const onlySingleRoomsArr: UpdRoomStateDataResp[] = this.getAllSingleRooms();
+    return onlySingleRoomsArr.some((room: UpdRoomStateDataResp) => {
+      return room.roomUsers.some((roomUser) => roomUser.index === clientId);
+    });
+  }
+
+  private deleteRoom(currRoomId: number, playerId: number): void {
+    const playersAmount = this.rooms[currRoomId].length;
+    if (playersAmount === 1) return;
+
+    const roomIdToDelete: string | undefined = Object.keys(this.rooms).find((roomId: string) => {
+      return this.rooms[Number(roomId)][0].index === playerId;
+    });
+
+    if (!roomIdToDelete) return;
+    delete this.rooms[Number(roomIdToDelete)];
   }
 }
