@@ -5,7 +5,6 @@ export class RoomUser {
   public name: string;
   public index: number;
   private gameField: GameField | null = null;
-  private isTurn: boolean = false;
 
   constructor(player: PlayersDB) {
     const {

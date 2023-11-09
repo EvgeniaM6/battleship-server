@@ -1,5 +1,5 @@
-import { RoomUser } from '../components/RoomUser';
+import { Room } from '../components/Room';
 
 export type RoomData = {
-  [roomId: number]: RoomUser[];
+  [roomId: number]: Room;
 };

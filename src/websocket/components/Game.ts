@@ -3,9 +3,11 @@ import {
   PlayersDB,
   RoomData,
   RoomUsers,
+  TurnDataResp,
   UpdRoomStateDataResp,
   UpdWinnersDataResp,
 } from '../models';
+import { Room } from './Room';
 import { RoomUser } from './RoomUser';
 
 export class Game {
@@ -18,7 +20,7 @@ export class Game {
     if (isCreatedRoomWithPlayer) return;
 
     const newRoomId = this.currentRoomId;
-    this.rooms[newRoomId] = [];
+    this.rooms[newRoomId] = new Room();
 
     this.currentRoomId++;
     return newRoomId;
@@ -27,24 +29,21 @@ export class Game {
   public addUserToRoom(roomId: number, player: PlayersDB): RoomUser[] {
     const { userId } = player;
 
-    const isSamePlayer: boolean = this.rooms[roomId][0]?.index === userId;
-    if (isSamePlayer) return this.rooms[roomId];
+    const isSamePlayer: boolean = this.rooms[roomId].hasUserById(userId);
+    if (isSamePlayer) return this.rooms[roomId].getRoomUsers();
 
     const roomUser = new RoomUser(player);
-    this.rooms[roomId].push(roomUser);
+    this.rooms[roomId].addUser(roomUser);
 
     this.deleteRoom(roomId, userId);
 
-    return this.rooms[roomId];
+    return this.rooms[roomId].getRoomUsers();
   }
 
   public getAllSingleRooms(): UpdRoomStateDataResp[] {
     const rooms: UpdRoomStateDataResp[] = Object.entries(this.rooms).map(
-      ([roomId, roomUsersArr]: [string, RoomUser[]]) => {
-        const roomUsers: RoomUsers[] = roomUsersArr.map((roomUser: RoomUser) => {
-          return { name: roomUser.name, index: roomUser.index };
-        });
-
+      ([roomId, room]: [string, Room]) => {
+        const roomUsers: RoomUsers[] = room.getRoomUsersForResp();
         return { roomId: Number(roomId), roomUsers };
       }
     );
@@ -66,29 +65,33 @@ export class Game {
   }
 
   private deleteRoom(currRoomId: number, playerId: number): void {
-    const playersAmount = this.rooms[currRoomId].length;
-    if (playersAmount === 1) return;
+    const isRoomCompleted = this.rooms[currRoomId].isRoomCompleted();
+    if (!isRoomCompleted) return;
 
     const roomIdToDelete: string | undefined = Object.keys(this.rooms).find((roomId: string) => {
-      return this.rooms[Number(roomId)][0].index === playerId;
+      return this.rooms[Number(roomId)].hasUserById(playerId);
     });
 
     if (!roomIdToDelete) return;
     delete this.rooms[Number(roomIdToDelete)];
   }
 
-  public addShips(dataReqObj: AddShipsDataReq) {
+  public addShips(dataReqObj: AddShipsDataReq): Room {
     const { gameId, ships, indexPlayer } = dataReqObj;
 
-    const room: RoomUser[] = this.rooms[gameId];
-    room[indexPlayer].addShips(ships);
-
-    const didAllPlayersAddShips: boolean = room.every((player) => player.haveShips());
-
-    if (!didAllPlayersAddShips) {
-      return [];
-    }
+    const room: Room = this.rooms[gameId];
+    room.addShipsForUser(indexPlayer, ships);
 
     return room;
+  }
+
+  public getCurrentPlayerByGameId(gameId: number): TurnDataResp {
+    return {
+      currentPlayer: this.rooms[gameId].getCurrentPlayer(),
+    };
+  }
+
+  public getUserIdArrByGameId(gameId: number): number[] {
+    return this.rooms[gameId].getUserIdArr();
   }
 }

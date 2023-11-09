@@ -10,11 +10,13 @@ import {
   RegDataResp,
   ReqRespTypes,
   StartDataResp,
+  TurnDataResp,
   UpdRoomStateDataResp,
   UpdWinnersDataResp,
   WssResponse,
 } from '../models';
 import { Game } from './Game';
+import { Room } from './Room';
 import { RoomUser } from './RoomUser';
 import { UsersManager } from './UsersManager';
 
@@ -125,20 +127,39 @@ export class AppController {
   }
 
   private addShips(dataReqObj: AddShipsDataReq): WssResponse[] {
-    const room: RoomUser[] = this.game.addShips(dataReqObj);
+    const room: Room = this.game.addShips(dataReqObj);
+    if (!room.haveAllUsersShips()) return [];
 
-    return room.map((player: RoomUser, i: number) => {
-      const indexPlayer = i === 0 ? 1 : 0;
+    const roomUsersArr = room.getRoomUsers();
+
+    const wssResponseArr: WssResponse[] = roomUsersArr.map((player: RoomUser, i: number) => {
+      const indexPlayer = room.getCurrentPlayer();
       const dataRespObj: StartDataResp = {
         ships: player.getShipsArr(),
         currentPlayerIndex: indexPlayer,
       };
 
-      return this.getResponse(dataRespObj, ReqRespTypes.StartGame, false, [room[i].index]);
+      return this.getResponse(dataRespObj, ReqRespTypes.StartGame, false, [roomUsersArr[i].index]);
     });
+
+    wssResponseArr.push(...this.turnResp(dataReqObj.gameId));
+    return wssResponseArr;
   }
 
   private createNewRoom(clientId: number): number | undefined {
     return this.game.createNewRoom(clientId);
+  }
+
+  private turnResp(gameId: number): WssResponse[] {
+    const dataRespObj: TurnDataResp = this.game.getCurrentPlayerByGameId(gameId);
+    const roomUsersArr: number[] = this.game.getUserIdArrByGameId(gameId);
+
+    const wssResp: WssResponse = this.getResponse(
+      dataRespObj,
+      ReqRespTypes.Turn,
+      false,
+      roomUsersArr
+    );
+    return [wssResp];
   }
 }
