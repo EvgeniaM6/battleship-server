@@ -78,7 +78,7 @@ type ShipPosition = {
   y: number;
 };
 
-type Ship = {
+export type Ship = {
   position: ShipPosition;
   direction: boolean;
   length: number;

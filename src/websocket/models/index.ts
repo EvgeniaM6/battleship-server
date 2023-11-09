@@ -18,7 +18,9 @@ import {
   UpdWinnersDataResp,
   DataRequest,
   DataResponse,
+  Ship,
 } from './reqResp.model';
+import { Cell, Field, Row } from './gameField.model';
 import { WssClients, WssData, WssResponse } from './websocket.model';
 
 export {
@@ -45,4 +47,8 @@ export {
   WssClients,
   RoomUser,
   WssResponse,
+  Cell,
+  Row,
+  Field,
+  Ship,
 };

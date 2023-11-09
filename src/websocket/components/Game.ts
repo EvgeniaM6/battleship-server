@@ -1,4 +1,12 @@
-import { PlayersDB, RoomData, RoomUser, UpdRoomStateDataResp, UpdWinnersDataResp } from '../models';
+import {
+  AddShipsDataReq,
+  PlayersDB,
+  RoomData,
+  RoomUser,
+  UpdRoomStateDataResp,
+  UpdWinnersDataResp,
+} from '../models';
+import { GameField } from './GameField';
 
 export class Game {
   private rooms: RoomData = {};
@@ -28,6 +36,8 @@ export class Game {
     const roomUser: RoomUser = {
       name,
       index: userId,
+      gameField: null,
+      isTurn: !this.rooms[roomId],
     };
 
     this.rooms[roomId].push(roomUser);
@@ -68,5 +78,22 @@ export class Game {
 
     if (!roomIdToDelete) return;
     delete this.rooms[Number(roomIdToDelete)];
+  }
+
+  public addShips(dataReqObj: AddShipsDataReq) {
+    const { gameId, ships, indexPlayer } = dataReqObj;
+
+    const gameField = new GameField(ships);
+
+    const room: RoomUser[] = this.rooms[gameId];
+    room[indexPlayer].gameField = gameField;
+
+    const didAllPlayersAddShips: boolean = room.every((player) => player.gameField);
+
+    if (!didAllPlayersAddShips) {
+      return [];
+    }
+
+    return room;
   }
 }

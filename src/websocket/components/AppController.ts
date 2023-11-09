@@ -1,4 +1,5 @@
 import {
+  AddShipsDataReq,
   AddUserToRoomDataReq,
   AddUserToRoomDataResp,
   ClientReqServerResp,
@@ -7,6 +8,7 @@ import {
   RegDataReq,
   ReqRespTypes,
   RoomUser,
+  StartDataResp,
   UpdRoomStateDataResp,
   UpdWinnersDataResp,
   WssResponse,
@@ -32,6 +34,8 @@ export class AppController {
         return this.createRoom(wssClientId);
       case ReqRespTypes.AddUserToRoom:
         return this.addUserToRoom(dataObj as AddUserToRoomDataReq, wssClientId);
+      case ReqRespTypes.AddShips:
+        return this.addShips(dataObj as AddShipsDataReq);
       default:
         return [];
     }
@@ -150,5 +154,35 @@ export class AppController {
     };
 
     return wssResp;
+  }
+
+  private addShips(dataReqObj: AddShipsDataReq) {
+    const room: RoomUser[] = this.game.addShips(dataReqObj);
+
+    const respArr: WssResponse[] = room.map((player: RoomUser, i: number) => {
+      const indexPlayer = i === 0 ? 1 : 0;
+      const dataRespObj: StartDataResp = {
+        ships: player.gameField?.getShips() || [],
+        currentPlayerIndex: indexPlayer,
+      };
+
+      const dataRespJson: string = JSON.stringify(dataRespObj);
+      const respObj: ClientReqServerResp = {
+        type: ReqRespTypes.StartGame,
+        data: dataRespJson,
+        id: 0,
+      };
+
+      const responseJson: string = JSON.stringify(respObj);
+      const resp = {
+        isRespForAll: false,
+        usersIdsForRespArr: [room[i].index],
+        responseJson: responseJson,
+      };
+
+      return resp;
+    });
+
+    return respArr;
   }
 }
