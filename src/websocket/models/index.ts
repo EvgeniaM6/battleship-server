@@ -20,6 +20,7 @@ import {
   DataResponse,
   Ship,
   RoomUsers,
+  AttackStatus,
 } from './reqResp.model';
 import { Cell, Field, Row } from './gameField.model';
 import { WssClients, WssData, WssResponse } from './websocket.model';
@@ -52,4 +53,5 @@ export {
   Row,
   Field,
   Ship,
+  AttackStatus,
 };

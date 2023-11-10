@@ -1,4 +1,4 @@
-import { RoomUsers, Ship } from '../models';
+import { AttackDataResp, AttackStatus, RoomUsers, Ship } from '../models';
 import { RoomUser } from './RoomUser';
 
 export class Room {
@@ -52,5 +52,24 @@ export class Room {
 
   public getUserIdArr(): number[] {
     return this.roomUsers.map((roomUser) => roomUser.index);
+  }
+
+  public attack(x: number, y: number, indexPlayer: number): AttackDataResp {
+    const enemyIdx: number = indexPlayer === 0 ? 1 : 0;
+    const attackStatus: AttackStatus = this.roomUsers[enemyIdx].attack(x, y);
+
+    if (attackStatus === AttackStatus.Miss) {
+      this.changeCurrentPlayer();
+    }
+
+    const attackDataResp: AttackDataResp = {
+      position: {
+        x,
+        y,
+      },
+      currentPlayer: indexPlayer,
+      status: attackStatus,
+    };
+    return attackDataResp;
   }
 }

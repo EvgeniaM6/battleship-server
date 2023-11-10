@@ -1,4 +1,4 @@
-import { Cell, Field, Ship } from '../models';
+import { AttackStatus, Cell, Field, Ship } from '../models';
 
 export class GameField {
   private shipsMatrix: Field = [];
@@ -36,19 +36,28 @@ export class GameField {
       direction,
       length,
     } = ship;
-    const firstShipPart = this.shipsMatrix[y][x];
+    const shipPartsArr: Cell[] = [];
+
+    const firstShipPart: Cell = this.shipsMatrix[y][x];
     firstShipPart.isShipPart = true;
+    shipPartsArr.push(firstShipPart);
 
     for (let index = 1; index < length; index++) {
-      const otherShipPart = direction
+      const otherShipPart: Cell = direction
         ? this.shipsMatrix[y + index][x]
         : this.shipsMatrix[y][x + index];
 
       otherShipPart.isShipPart = true;
 
-      firstShipPart.otherShipParts.push(otherShipPart);
-      otherShipPart.otherShipParts.push(firstShipPart);
+      shipPartsArr.push(otherShipPart);
     }
+
+    shipPartsArr.forEach((shipPart: Cell, i: number) => {
+      shipPartsArr.forEach((otherShipPart: Cell, idx: number) => {
+        if (i === idx) return;
+        shipPart.otherShipParts.push(otherShipPart);
+      });
+    });
   }
 
   public getShipsMatrix(): Field {
@@ -57,5 +66,21 @@ export class GameField {
 
   public getShips(): Ship[] {
     return this.ships;
+  }
+
+  public attackCell(x: number, y: number): AttackStatus {
+    const cell: Cell = this.shipsMatrix[y][x];
+
+    cell.isShot = true;
+
+    if (!cell.isShipPart) {
+      return AttackStatus.Miss;
+    }
+
+    const isShipKilled: boolean = cell.otherShipParts.every((shipPart) => shipPart.isShot);
+    if (isShipKilled) {
+      return AttackStatus.Killed;
+    }
+    return AttackStatus.Shot;
   }
 }

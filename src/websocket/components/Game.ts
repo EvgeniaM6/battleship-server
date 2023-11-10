@@ -1,5 +1,7 @@
 import {
   AddShipsDataReq,
+  AttackDataReq,
+  AttackDataResp,
   PlayersDB,
   RoomData,
   RoomUsers,
@@ -93,5 +95,10 @@ export class Game {
 
   public getUserIdArrByGameId(gameId: number): number[] {
     return this.rooms[gameId].getUserIdArr();
+  }
+
+  public attack(dataReqObj: AttackDataReq): AttackDataResp {
+    const { gameId, x, y, indexPlayer } = dataReqObj;
+    return this.rooms[gameId].attack(x, y, indexPlayer);
   }
 }

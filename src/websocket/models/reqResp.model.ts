@@ -103,10 +103,16 @@ export type AttackDataReq = {
   indexPlayer: number;
 };
 
+export enum AttackStatus {
+  Miss = 'miss',
+  Killed = 'killed',
+  Shot = 'shot',
+}
+
 export type AttackDataResp = {
   position: ShipPosition;
   currentPlayer: number;
-  status: 'miss' | 'killed' | 'shot';
+  status: AttackStatus;
 };
 
 export type RandomAttackDataReq = {

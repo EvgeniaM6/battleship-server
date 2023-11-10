@@ -1,4 +1,4 @@
-import { PlayersDB, Ship } from '../models';
+import { AttackStatus, PlayersDB, Ship } from '../models';
 import { GameField } from './GameField';
 
 export class RoomUser {
@@ -26,5 +26,13 @@ export class RoomUser {
 
   public getShipsArr(): Ship[] {
     return this.gameField ? this.gameField.getShips() : [];
+  }
+
+  public attack(x: number, y: number): AttackStatus {
+    if (!this.gameField) {
+      return AttackStatus.Miss;
+    }
+
+    return this.gameField.attackCell(x, y);
   }
 }

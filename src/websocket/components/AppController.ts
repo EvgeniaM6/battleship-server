@@ -2,6 +2,8 @@ import {
   AddShipsDataReq,
   AddUserToRoomDataReq,
   AddUserToRoomDataResp,
+  AttackDataReq,
+  AttackDataResp,
   ClientReqServerResp,
   DataRequest,
   DataResponse,
@@ -40,6 +42,8 @@ export class AppController {
         return this.addUserToRoom(dataObj as AddUserToRoomDataReq, wssClientId);
       case ReqRespTypes.AddShips:
         return this.addShips(dataObj as AddShipsDataReq);
+      case ReqRespTypes.Attack:
+        return this.attack(dataObj as AttackDataReq);
       default:
         return [];
     }
@@ -151,15 +155,22 @@ export class AppController {
   }
 
   private turnResp(gameId: number): WssResponse[] {
-    const dataRespObj: TurnDataResp = this.game.getCurrentPlayerByGameId(gameId);
-    const roomUsersArr: number[] = this.game.getUserIdArrByGameId(gameId);
-
-    const wssResp: WssResponse = this.getResponse(
-      dataRespObj,
-      ReqRespTypes.Turn,
-      false,
-      roomUsersArr
-    );
+    const usersIdArr: number[] = this.game.getUserIdArrByGameId(gameId);
+    const wssResp: WssResponse = this.getTurnResp(gameId, usersIdArr);
     return [wssResp];
+  }
+
+  private getTurnResp(gameId: number, usersIdArr: number[]): WssResponse {
+    const dataResp: TurnDataResp = this.game.getCurrentPlayerByGameId(gameId);
+    return this.getResponse(dataResp, ReqRespTypes.Turn, false, usersIdArr);
+  }
+
+  private attack(dataReqObj: AttackDataReq): WssResponse[] {
+    const dataResp: AttackDataResp = this.game.attack(dataReqObj);
+    const usersIdArr: number[] = this.game.getUserIdArrByGameId(dataReqObj.gameId);
+
+    const wssResp: WssResponse = this.getResponse(dataResp, ReqRespTypes.Attack, false, usersIdArr);
+    const wssTurnResp: WssResponse = this.getTurnResp(dataReqObj.gameId, usersIdArr);
+    return [wssResp, wssTurnResp];
   }
 }
