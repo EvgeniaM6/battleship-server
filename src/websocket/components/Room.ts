@@ -59,6 +59,7 @@ export class Room {
 
     const enemyIdx: number = indexPlayer === 0 ? 1 : 0;
     const attackResult: AttackResult[] = this.roomUsers[enemyIdx].attack(x, y);
+    if (!attackResult.length) return [];
 
     const attackStatus = attackResult[0].status;
     if (attackStatus === AttackStatus.Miss) {

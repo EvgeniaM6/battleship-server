@@ -86,6 +86,7 @@ export class GameField {
 
   public attackCell(x: number, y: number): AttackResult[] {
     const cell: Cell = this.shipsMatrix[y][x];
+    if (cell.isShot) return [];
 
     cell.isShot = true;
 
