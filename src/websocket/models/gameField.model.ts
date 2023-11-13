@@ -5,6 +5,7 @@ export type Cell = {
   isShipPart: boolean;
   isShot: boolean;
   otherShipParts: Cell[];
+  aroundShipCellsArr: Cell[];
 };
 
 export type Row = Cell[];

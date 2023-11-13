@@ -1,4 +1,4 @@
-import { AttackResult, AttackStatus, Cell, Field, Row, Ship } from '../models';
+import { AttackResult, AttackStatus, Cell, Field, Row, Ship, ShipPosition } from '../models';
 
 export class GameField {
   private shipsMatrix: Field = [];
@@ -28,6 +28,7 @@ export class GameField {
           isShipPart: false,
           isShot: false,
           otherShipParts: [],
+          aroundShipCellsArr: [],
           position: { x: index, y: i },
         };
         matrixRow.push(cell);
@@ -57,11 +58,21 @@ export class GameField {
       shipPartsArr.push(otherShipPart);
     }
 
+    const aroundShipCellsArr: Cell[] = [];
+    const aroundShipPositionArr: ShipPosition[] = this.getAroundShipCells(x, y, direction, length);
+    aroundShipPositionArr.forEach(({ x, y }: ShipPosition) => {
+      if (!this.shipsMatrix[y]) return;
+      if (!this.shipsMatrix[y][x]) return;
+      aroundShipCellsArr.push(this.shipsMatrix[y][x]);
+    });
+
     shipPartsArr.forEach((shipPart: Cell, i: number) => {
       shipPartsArr.forEach((otherShipPart: Cell, idx: number) => {
         if (i === idx) return;
         shipPart.otherShipParts.push(otherShipPart);
       });
+
+      shipPart.aroundShipCellsArr = aroundShipCellsArr;
     });
   }
 
@@ -85,12 +96,43 @@ export class GameField {
 
     const isShipKilled: boolean = cell.otherShipParts.every((shipPart) => shipPart.isShot);
     if (isShipKilled) {
-      return [cell, ...cell.otherShipParts].map((cell: Cell) => {
+      const killedCells: AttackResult[] = [cell, ...cell.otherShipParts].map((cell: Cell) => {
         return { position: cell.position, status: AttackStatus.Killed };
       });
+      const missedCells: AttackResult[] = cell.aroundShipCellsArr
+        .filter((cell: Cell) => !cell.isShot)
+        .map((cell: Cell) => {
+          return { position: cell.position, status: AttackStatus.Miss };
+        });
+      cell.aroundShipCellsArr.forEach((cell: Cell) => (cell.isShot = true));
+      return [...killedCells, ...missedCells];
     }
 
     const attackResult = { position: cell.position, status: AttackStatus.Shot };
     return [attackResult];
+  }
+
+  getAroundShipCells(x: number, y: number, direction: boolean, length: number): ShipPosition[] {
+    const aroundShipPositionArr: ShipPosition[] = [];
+
+    for (let index = -1; index <= length; index++) {
+      if (direction) {
+        aroundShipPositionArr.push({ x: x - 1, y: y + index });
+        aroundShipPositionArr.push({ x: x + 1, y: y + index });
+      } else {
+        aroundShipPositionArr.push({ x: x + index, y: y - 1 });
+        aroundShipPositionArr.push({ x: x + index, y: y + 1 });
+      }
+    }
+
+    if (direction) {
+      aroundShipPositionArr.push({ x, y: y - 1 });
+      aroundShipPositionArr.push({ x, y: y + length });
+    } else {
+      aroundShipPositionArr.push({ x: x - 1, y: y - 1 });
+      aroundShipPositionArr.push({ x: x + length, y });
+    }
+
+    return aroundShipPositionArr;
   }
 }
