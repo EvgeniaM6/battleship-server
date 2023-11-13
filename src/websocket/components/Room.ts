@@ -61,15 +61,29 @@ export class Room {
     const attackResult: AttackResult[] = this.roomUsers[enemyIdx].attack(x, y);
     if (!attackResult.length) return [];
 
+    return this.getAttackDataResp(indexPlayer, attackResult);
+  }
+
+  private getAttackDataResp(indexPlayer: number, attackResult: AttackResult[]): AttackDataResp[] {
     const attackStatus = attackResult[0].status;
     if (attackStatus === AttackStatus.Miss) {
       this.changeCurrentPlayer();
     }
 
-    const attackDataResp: AttackDataResp[] = attackResult.map((attackRes) => {
+    const attackDataResp: AttackDataResp[] = attackResult.map((attackRes: AttackResult) => {
       const attackResp: AttackDataResp = { ...attackRes, currentPlayer: indexPlayer };
       return attackResp;
     });
     return attackDataResp;
+  }
+
+  public randomAttack(indexPlayer: number): AttackDataResp[] {
+    if (indexPlayer !== this.currentPlayer) return [];
+
+    const enemyIdx: number = indexPlayer === 0 ? 1 : 0;
+    const attackResult: AttackResult[] = this.roomUsers[enemyIdx].randomAttack();
+    if (!attackResult.length) return [];
+
+    return this.getAttackDataResp(indexPlayer, attackResult);
   }
 }

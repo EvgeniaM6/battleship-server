@@ -37,11 +37,9 @@ export class GameField {
   }
 
   private setShipToMatrix(ship: Ship): void {
-    const {
-      position: { x, y },
-      direction,
-      length,
-    } = ship;
+    const { position, direction, length } = ship;
+    const { x, y } = position;
+
     const shipPartsArr: Cell[] = [];
 
     const firstShipPart: Cell = this.shipsMatrix[y][x];
@@ -59,7 +57,7 @@ export class GameField {
     }
 
     const aroundShipCellsArr: Cell[] = [];
-    const aroundShipPositionArr: ShipPosition[] = this.getAroundShipCells(x, y, direction, length);
+    const aroundShipPositionArr: ShipPosition[] = this.getAroundShipCells(ship);
     aroundShipPositionArr.forEach(({ x, y }: ShipPosition) => {
       if (!this.shipsMatrix[y]) return;
       if (!this.shipsMatrix[y][x]) return;
@@ -113,7 +111,10 @@ export class GameField {
     return [attackResult];
   }
 
-  getAroundShipCells(x: number, y: number, direction: boolean, length: number): ShipPosition[] {
+  private getAroundShipCells(ship: Ship): ShipPosition[] {
+    const { position, direction, length } = ship;
+    const { x, y } = position;
+
     const aroundShipPositionArr: ShipPosition[] = [];
 
     for (let index = -1; index <= length; index++) {
@@ -130,10 +131,29 @@ export class GameField {
       aroundShipPositionArr.push({ x, y: y - 1 });
       aroundShipPositionArr.push({ x, y: y + length });
     } else {
-      aroundShipPositionArr.push({ x: x - 1, y: y - 1 });
+      aroundShipPositionArr.push({ x: x - 1, y });
       aroundShipPositionArr.push({ x: x + length, y });
     }
 
     return aroundShipPositionArr;
+  }
+
+  public randomAttack(): AttackResult[] {
+    const randomPosition: ShipPosition | null = this.getRandomPosition();
+    if (!randomPosition) return [];
+
+    return this.attackCell(randomPosition.x, randomPosition.y);
+  }
+
+  public getRandomPosition(): ShipPosition | null {
+    const filteredMatrix: Field = this.shipsMatrix.map((row: Row) => {
+      return row.filter((cell: Cell) => !cell.isShot);
+    });
+    const availableCellsArr: Cell[] = filteredMatrix.flat();
+    if (availableCellsArr.length) return null;
+
+    const randomCellIdx: number = Math.floor(Math.random() * availableCellsArr.length);
+
+    return availableCellsArr[randomCellIdx].position;
   }
 }

@@ -3,6 +3,7 @@ import {
   AttackDataReq,
   AttackDataResp,
   PlayersDB,
+  RandomAttackDataReq,
   RoomData,
   RoomUsers,
   TurnDataResp,
@@ -100,5 +101,10 @@ export class Game {
   public attack(dataReqObj: AttackDataReq): AttackDataResp[] {
     const { gameId, x, y, indexPlayer } = dataReqObj;
     return this.rooms[gameId].attack(x, y, indexPlayer);
+  }
+
+  public randomAttack(dataReqObj: RandomAttackDataReq): AttackDataResp[] {
+    const { gameId, indexPlayer } = dataReqObj;
+    return this.rooms[gameId].randomAttack(indexPlayer);
   }
 }

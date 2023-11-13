@@ -1,4 +1,4 @@
-import { AttackResult, AttackStatus, PlayersDB, Ship } from '../models';
+import { AttackResult, PlayersDB, Ship } from '../models';
 import { GameField } from './GameField';
 
 export class RoomUser {
@@ -29,18 +29,12 @@ export class RoomUser {
   }
 
   public attack(x: number, y: number): AttackResult[] {
-    if (!this.gameField) {
-      return [
-        {
-          position: {
-            x,
-            y,
-          },
-          status: AttackStatus.Miss,
-        },
-      ];
-    }
-
+    if (!this.gameField) return [];
     return this.gameField.attackCell(x, y);
+  }
+
+  public randomAttack(): AttackResult[] {
+    if (!this.gameField) return [];
+    return this.gameField.randomAttack();
   }
 }

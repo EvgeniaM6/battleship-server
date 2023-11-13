@@ -8,6 +8,7 @@ import {
   DataRequest,
   DataResponse,
   PlayersDB,
+  RandomAttackDataReq,
   RegDataReq,
   RegDataResp,
   ReqRespTypes,
@@ -44,6 +45,8 @@ export class AppController {
         return this.addShips(dataObj as AddShipsDataReq);
       case ReqRespTypes.Attack:
         return this.attack(dataObj as AttackDataReq);
+      case ReqRespTypes.RandomAttack:
+        return this.randomAttack(dataObj as AttackDataReq);
       default:
         return [];
     }
@@ -169,12 +172,23 @@ export class AppController {
     const dataRespArr: AttackDataResp[] = this.game.attack(dataReqObj);
     if (!dataRespArr.length) return [];
 
-    const usersIdArr: number[] = this.game.getUserIdArrByGameId(dataReqObj.gameId);
+    return this.getAttackResp(dataReqObj.gameId, dataRespArr);
+  }
+
+  private getAttackResp(gameId: number, dataRespArr: AttackDataResp[]): WssResponse[] {
+    const usersIdArr: number[] = this.game.getUserIdArrByGameId(gameId);
 
     const wssRespArr: WssResponse[] = dataRespArr.map((dataResp) => {
       return this.getResponse(dataResp, ReqRespTypes.Attack, false, usersIdArr);
     });
-    const wssTurnResp: WssResponse = this.getTurnResp(dataReqObj.gameId, usersIdArr);
+    const wssTurnResp: WssResponse = this.getTurnResp(gameId, usersIdArr);
     return [...wssRespArr, wssTurnResp];
+  }
+
+  private randomAttack(dataReqObj: RandomAttackDataReq): WssResponse[] {
+    const dataRespArr: AttackDataResp[] = this.game.randomAttack(dataReqObj);
+    if (!dataRespArr.length) return [];
+
+    return this.getAttackResp(dataReqObj.gameId, dataRespArr);
   }
 }
