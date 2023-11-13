@@ -37,4 +37,9 @@ export class RoomUser {
     if (!this.gameField) return [];
     return this.gameField.randomAttack();
   }
+
+  public isLost(): boolean {
+    if (!this.gameField) return false;
+    return this.gameField.isLost();
+  }
 }

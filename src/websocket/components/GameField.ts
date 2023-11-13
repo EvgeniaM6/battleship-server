@@ -146,14 +146,18 @@ export class GameField {
   }
 
   public getRandomPosition(): ShipPosition | null {
-    const filteredMatrix: Field = this.shipsMatrix.map((row: Row) => {
-      return row.filter((cell: Cell) => !cell.isShot);
-    });
-    const availableCellsArr: Cell[] = filteredMatrix.flat();
+    const availableCellsArr: Cell[] = this.shipsMatrix.flat().filter((cell: Cell) => !cell.isShot);
     if (availableCellsArr.length) return null;
 
     const randomCellIdx: number = Math.floor(Math.random() * availableCellsArr.length);
 
     return availableCellsArr[randomCellIdx].position;
+  }
+
+  public isLost(): boolean {
+    const notShotCells: Cell[] = this.shipsMatrix
+      .flat()
+      .filter((cell: Cell) => cell.isShipPart && !cell.isShot);
+    return !notShotCells.length;
   }
 }

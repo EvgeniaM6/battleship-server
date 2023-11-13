@@ -107,4 +107,26 @@ export class Game {
     const { gameId, indexPlayer } = dataReqObj;
     return this.rooms[gameId].randomAttack(indexPlayer);
   }
+
+  public checkWinner(gameId: number): number {
+    const winnerIdx: number = this.rooms[gameId].checkWinner();
+
+    if (winnerIdx + 1) {
+      this.saveWinner(this.rooms[gameId].getUserById(winnerIdx));
+    }
+    return winnerIdx;
+  }
+
+  private saveWinner(name: string): void {
+    const winnerIdxInDb: number = this.winners.findIndex(
+      (winner: UpdWinnersDataResp) => winner.name === name
+    );
+
+    if (winnerIdxInDb + 1) {
+      this.winners[winnerIdxInDb].wins++;
+      return;
+    }
+
+    this.winners.push({ name, wins: 1 });
+  }
 }

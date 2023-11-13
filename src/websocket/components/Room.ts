@@ -86,4 +86,19 @@ export class Room {
 
     return this.getAttackDataResp(indexPlayer, attackResult);
   }
+
+  public checkWinner(): number {
+    const lostUserIdx: number = this.roomUsers.findIndex((user: RoomUser) => {
+      return user.isLost();
+    });
+
+    if (lostUserIdx + 1) {
+      return lostUserIdx === 0 ? 1 : 0;
+    }
+    return lostUserIdx;
+  }
+
+  public getUserById(userId: number): string {
+    return this.roomUsers[userId].name;
+  }
 }

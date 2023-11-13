@@ -7,6 +7,7 @@ import {
   ClientReqServerResp,
   DataRequest,
   DataResponse,
+  FinishDataResp,
   PlayersDB,
   RandomAttackDataReq,
   RegDataReq,
@@ -181,8 +182,29 @@ export class AppController {
     const wssRespArr: WssResponse[] = dataRespArr.map((dataResp) => {
       return this.getResponse(dataResp, ReqRespTypes.Attack, false, usersIdArr);
     });
-    const wssTurnResp: WssResponse = this.getTurnResp(gameId, usersIdArr);
-    return [...wssRespArr, wssTurnResp];
+    const winnerId: number = this.game.checkWinner(gameId);
+
+    if (winnerId + 1) {
+      const finishDataResp: FinishDataResp = {
+        winPlayer: winnerId,
+      };
+
+      const wssFinishResp: WssResponse = this.getResponse(
+        finishDataResp,
+        ReqRespTypes.Finish,
+        false,
+        usersIdArr
+      );
+      wssRespArr.push(wssFinishResp);
+
+      const wssWinnersResp: WssResponse = this.getAllWinnersResp();
+      wssRespArr.push(wssWinnersResp);
+    } else {
+      const wssTurnResp: WssResponse = this.getTurnResp(gameId, usersIdArr);
+      wssRespArr.push(wssTurnResp);
+    }
+
+    return wssRespArr;
   }
 
   private randomAttack(dataReqObj: RandomAttackDataReq): WssResponse[] {
