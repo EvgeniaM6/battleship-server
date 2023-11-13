@@ -166,11 +166,15 @@ export class AppController {
   }
 
   private attack(dataReqObj: AttackDataReq): WssResponse[] {
-    const dataResp: AttackDataResp = this.game.attack(dataReqObj);
+    const dataRespArr: AttackDataResp[] = this.game.attack(dataReqObj);
+    if (!dataRespArr.length) return [];
+
     const usersIdArr: number[] = this.game.getUserIdArrByGameId(dataReqObj.gameId);
 
-    const wssResp: WssResponse = this.getResponse(dataResp, ReqRespTypes.Attack, false, usersIdArr);
+    const wssRespArr: WssResponse[] = dataRespArr.map((dataResp) => {
+      return this.getResponse(dataResp, ReqRespTypes.Attack, false, usersIdArr);
+    });
     const wssTurnResp: WssResponse = this.getTurnResp(dataReqObj.gameId, usersIdArr);
-    return [wssResp, wssTurnResp];
+    return [...wssRespArr, wssTurnResp];
   }
 }

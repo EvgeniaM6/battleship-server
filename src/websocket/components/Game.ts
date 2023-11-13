@@ -97,7 +97,7 @@ export class Game {
     return this.rooms[gameId].getUserIdArr();
   }
 
-  public attack(dataReqObj: AttackDataReq): AttackDataResp {
+  public attack(dataReqObj: AttackDataReq): AttackDataResp[] {
     const { gameId, x, y, indexPlayer } = dataReqObj;
     return this.rooms[gameId].attack(x, y, indexPlayer);
   }

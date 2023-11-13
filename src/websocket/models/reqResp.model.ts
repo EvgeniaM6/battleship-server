@@ -73,7 +73,7 @@ export type UpdRoomStateDataResp = {
   roomUsers: RoomUsers[];
 };
 
-type ShipPosition = {
+export type ShipPosition = {
   x: number;
   y: number;
 };

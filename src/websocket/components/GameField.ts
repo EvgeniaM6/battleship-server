@@ -1,4 +1,4 @@
-import { AttackStatus, Cell, Field, Ship } from '../models';
+import { AttackResult, AttackStatus, Cell, Field, Row, Ship } from '../models';
 
 export class GameField {
   private shipsMatrix: Field = [];
@@ -22,9 +22,14 @@ export class GameField {
       this.shipsMatrix.push([]);
     }
 
-    this.shipsMatrix.map((matrixRow) => {
+    this.shipsMatrix.map((matrixRow: Row, i: number) => {
       for (let index = 0; index < 10; index++) {
-        const cell: Cell = { isShipPart: false, isShot: false, otherShipParts: [] };
+        const cell: Cell = {
+          isShipPart: false,
+          isShot: false,
+          otherShipParts: [],
+          position: { x: index, y: i },
+        };
         matrixRow.push(cell);
       }
     });
@@ -68,19 +73,24 @@ export class GameField {
     return this.ships;
   }
 
-  public attackCell(x: number, y: number): AttackStatus {
+  public attackCell(x: number, y: number): AttackResult[] {
     const cell: Cell = this.shipsMatrix[y][x];
 
     cell.isShot = true;
 
     if (!cell.isShipPart) {
-      return AttackStatus.Miss;
+      const attackResult = { position: cell.position, status: AttackStatus.Miss };
+      return [attackResult];
     }
 
     const isShipKilled: boolean = cell.otherShipParts.every((shipPart) => shipPart.isShot);
     if (isShipKilled) {
-      return AttackStatus.Killed;
+      return [cell, ...cell.otherShipParts].map((cell: Cell) => {
+        return { position: cell.position, status: AttackStatus.Killed };
+      });
     }
-    return AttackStatus.Shot;
+
+    const attackResult = { position: cell.position, status: AttackStatus.Shot };
+    return [attackResult];
   }
 }
