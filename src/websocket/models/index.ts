@@ -22,8 +22,17 @@ import {
   RoomUsers,
   AttackStatus,
   ShipPosition,
+  ShipType,
 } from './reqResp.model';
-import { AttackResult, Cell, Field, Row } from './gameField.model';
+import {
+  AttackResult,
+  Cell,
+  CreatedShip,
+  Field,
+  Row,
+  ShipData,
+  ShipsInfo,
+} from './gameField.model';
 import { WssClients, WssData, WssResponse } from './websocket.model';
 
 export {
@@ -57,4 +66,8 @@ export {
   AttackStatus,
   AttackResult,
   ShipPosition,
+  ShipType,
+  ShipsInfo,
+  ShipData,
+  CreatedShip,
 };

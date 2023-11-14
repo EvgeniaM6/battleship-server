@@ -48,6 +48,8 @@ export class AppController {
         return this.attack(dataObj as AttackDataReq);
       case ReqRespTypes.RandomAttack:
         return this.randomAttack(dataObj as AttackDataReq);
+      case ReqRespTypes.Single:
+        return this.startSingleGame(wssClientId);
       default:
         return [];
     }
@@ -80,12 +82,7 @@ export class AppController {
     if (usersInRoomArr.length === 1) return [];
 
     const respArr: WssResponse[] = usersInRoomArr.map((user: RoomUser, i: number) => {
-      const dataRespObj: AddUserToRoomDataResp = {
-        idGame: indexRoom,
-        idPlayer: i,
-      };
-
-      return this.getResponse(dataRespObj, ReqRespTypes.CrtGame, false, [user.index]);
+      return this.getCreateGameResp(indexRoom, i, user.index);
     });
 
     const updRoomResp: WssResponse = this.getAllSingleRoomsResp();
@@ -212,5 +209,23 @@ export class AppController {
     if (!dataRespArr.length) return [];
 
     return this.getAttackResp(dataReqObj.gameId, dataRespArr);
+  }
+
+  private getCreateGameResp(idGame: number, idPlayer: number, clientId: number): WssResponse {
+    const dataRespObj: AddUserToRoomDataResp = { idGame, idPlayer };
+    return this.getResponse(dataRespObj, ReqRespTypes.CrtGame, false, [clientId]);
+  }
+
+  private startSingleGame(clientId: number): WssResponse[] {
+    const newRoomId: number | undefined = this.createNewRoom(clientId);
+    if (newRoomId === undefined) return [];
+
+    const usersInRoomArr: RoomUser[] = this.addPlayerToRoomById(newRoomId, clientId);
+    if (!usersInRoomArr.length) return [];
+
+    this.game.createBot(newRoomId);
+
+    const wssResp: WssResponse = this.getCreateGameResp(newRoomId, 0, clientId);
+    return [wssResp];
   }
 }

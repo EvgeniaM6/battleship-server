@@ -58,6 +58,8 @@ export class WSServer {
         });
       } else {
         usersIdsForRespArr.forEach((userIdForResp: number) => {
+          if (!(userIdForResp + 1)) return;
+
           this.wssClients[userIdForResp].isRegistered = true;
 
           const ws: WebSocket = this.wssClients[userIdForResp].ws;

@@ -1,4 +1,5 @@
 import { AttackResult, AttackStatus, Cell, Field, Row, Ship, ShipPosition } from '../models';
+import { createEmptyMatrix, getAroundShipCells } from '../utils';
 
 export class GameField {
   private shipsMatrix: Field = [];
@@ -18,21 +19,19 @@ export class GameField {
   }
 
   private createEmptyShipsMatrix(): void {
-    for (let index = 0; index < 10; index++) {
-      this.shipsMatrix.push([]);
-    }
+    const cell: Cell = {
+      isShipPart: false,
+      isShot: false,
+      otherShipParts: [],
+      aroundShipCellsArr: [],
+      position: { x: 0, y: 0 },
+    };
 
-    this.shipsMatrix.map((matrixRow: Row, i: number) => {
-      for (let index = 0; index < 10; index++) {
-        const cell: Cell = {
-          isShipPart: false,
-          isShot: false,
-          otherShipParts: [],
-          aroundShipCellsArr: [],
-          position: { x: index, y: i },
-        };
-        matrixRow.push(cell);
-      }
+    const shipsMatrix: Field = createEmptyMatrix(cell);
+    this.shipsMatrix = shipsMatrix.map((row: Row, y: number) => {
+      return row.map((cell: Cell, x: number) => {
+        return { ...cell, position: { x, y } };
+      });
     });
   }
 
@@ -57,7 +56,7 @@ export class GameField {
     }
 
     const aroundShipCellsArr: Cell[] = [];
-    const aroundShipPositionArr: ShipPosition[] = this.getAroundShipCells(ship);
+    const aroundShipPositionArr: ShipPosition[] = getAroundShipCells(ship);
     aroundShipPositionArr.forEach(({ x, y }: ShipPosition) => {
       if (!this.shipsMatrix[y]) return;
       if (!this.shipsMatrix[y][x]) return;
@@ -109,33 +108,6 @@ export class GameField {
 
     const attackResult = { position: cell.position, status: AttackStatus.Shot };
     return [attackResult];
-  }
-
-  private getAroundShipCells(ship: Ship): ShipPosition[] {
-    const { position, direction, length } = ship;
-    const { x, y } = position;
-
-    const aroundShipPositionArr: ShipPosition[] = [];
-
-    for (let index = -1; index <= length; index++) {
-      if (direction) {
-        aroundShipPositionArr.push({ x: x - 1, y: y + index });
-        aroundShipPositionArr.push({ x: x + 1, y: y + index });
-      } else {
-        aroundShipPositionArr.push({ x: x + index, y: y - 1 });
-        aroundShipPositionArr.push({ x: x + index, y: y + 1 });
-      }
-    }
-
-    if (direction) {
-      aroundShipPositionArr.push({ x, y: y - 1 });
-      aroundShipPositionArr.push({ x, y: y + length });
-    } else {
-      aroundShipPositionArr.push({ x: x - 1, y });
-      aroundShipPositionArr.push({ x: x + length, y });
-    }
-
-    return aroundShipPositionArr;
   }
 
   public randomAttack(): AttackResult[] {

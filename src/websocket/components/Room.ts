@@ -1,4 +1,5 @@
 import { AttackDataResp, AttackResult, AttackStatus, RoomUsers, Ship } from '../models';
+import { getRandomShips } from '../utils';
 import { RoomUser } from './RoomUser';
 
 export class Room {
@@ -100,5 +101,10 @@ export class Room {
 
   public getUserById(userId: number): string {
     return this.roomUsers[userId].name;
+  }
+
+  public addShipsForBot() {
+    const ships: Ship[] = getRandomShips();
+    this.addShipsForUser(1, ships);
   }
 }

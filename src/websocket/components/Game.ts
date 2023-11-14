@@ -129,4 +129,9 @@ export class Game {
 
     this.winners.push({ name, wins: 1 });
   }
+
+  public createBot(gameId: number): void {
+    this.addUserToRoom(gameId, { userId: -1, userData: { name: '--Bot--', password: '' } });
+    this.rooms[gameId].addShipsForBot();
+  }
 }

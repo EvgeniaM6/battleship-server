@@ -11,6 +11,7 @@ export enum ReqRespTypes {
   RandomAttack = 'randomAttack',
   Turn = 'turn',
   Finish = 'finish',
+  Single = 'single_play',
 }
 
 export type ClientReqServerResp = {
@@ -78,11 +79,13 @@ export type ShipPosition = {
   y: number;
 };
 
+export type ShipType = 'small' | 'medium' | 'large' | 'huge';
+
 export type Ship = {
   position: ShipPosition;
   direction: boolean;
   length: number;
-  type: 'small' | 'medium' | 'large' | 'huge';
+  type: ShipType;
 };
 
 export type AddShipsDataReq = {

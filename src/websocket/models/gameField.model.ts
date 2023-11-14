@@ -1,4 +1,4 @@
-import { AttackDataResp, ShipPosition } from './reqResp.model';
+import { AttackDataResp, Ship, ShipPosition, ShipType } from './reqResp.model';
 
 export type Cell = {
   position: ShipPosition;
@@ -12,3 +12,14 @@ export type Row = Cell[];
 export type Field = Row[];
 
 export type AttackResult = Omit<AttackDataResp, 'currentPlayer'>;
+
+export type ShipsInfo = {
+  [key: number]: ShipData;
+};
+
+export type ShipData = {
+  type: ShipType;
+  amount: number;
+};
+
+export type CreatedShip = Omit<Ship, 'position'>;
