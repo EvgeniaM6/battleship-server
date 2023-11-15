@@ -1,3 +1,4 @@
+import { BOT_DATA, BOT_INDEX } from '../constants';
 import {
   AddShipsDataReq,
   AttackDataReq,
@@ -131,7 +132,7 @@ export class Game {
   }
 
   public createBot(gameId: number): void {
-    this.addUserToRoom(gameId, { userId: -1, userData: { name: '--Bot--', password: '' } });
+    this.addUserToRoom(gameId, { userId: BOT_INDEX, userData: BOT_DATA });
     this.rooms[gameId].addShipsForBot();
   }
 }

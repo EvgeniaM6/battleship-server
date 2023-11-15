@@ -2,6 +2,7 @@ import { IncomingMessage } from 'http';
 import WebSocket, { WebSocketServer } from 'ws';
 import { AppController } from './components';
 import { WssClients, WssData, WssResponse } from './models';
+import { RESPONSE_DELAY } from './constants';
 
 export class WSServer {
   private appController = new AppController();
@@ -21,7 +22,6 @@ export class WSServer {
   }
 
   private handleWsConnection(ws: WebSocket) {
-    console.log('connection!');
     const newWssClientId: number = this.saveWssClient(ws);
 
     ws.on('message', (wsData: WebSocket.RawData) => this.handleWsMessage(newWssClientId, wsData));
@@ -41,13 +41,12 @@ export class WSServer {
 
   private handleWsMessage(wssClientId: number, wsData: WebSocket.RawData) {
     const dataJson: string = wsData.toString();
-    console.log('dataJson=', dataJson);
 
     const responsesArr: WssResponse[] = this.getResponseData(dataJson, wssClientId);
 
     if (!responsesArr.length) return;
 
-    responsesArr.forEach((response: WssResponse) => {
+    responsesArr.forEach((response: WssResponse, i: number) => {
       const { isRespForAll, usersIdsForRespArr, responseJson } = response;
 
       if (isRespForAll) {
@@ -60,10 +59,15 @@ export class WSServer {
         usersIdsForRespArr.forEach((userIdForResp: number) => {
           if (!(userIdForResp + 1)) return;
 
-          this.wssClients[userIdForResp].isRegistered = true;
+          const wsData: WssData = this.wssClients[userIdForResp];
+          if (!wsData.isRegistered) {
+            wsData.isRegistered = true;
+          }
 
-          const ws: WebSocket = this.wssClients[userIdForResp].ws;
-          ws.send(responseJson);
+          const { ws } = wsData;
+          setTimeout(() => {
+            ws.send(responseJson);
+          }, RESPONSE_DELAY * i);
         });
       }
     });

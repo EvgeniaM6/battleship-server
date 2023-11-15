@@ -1,3 +1,4 @@
+import { BOT_INDEX } from '../constants';
 import { AttackDataResp, AttackResult, AttackStatus, RoomUsers, Ship } from '../models';
 import { getRandomShips } from '../utils';
 import { RoomUser } from './RoomUser';
@@ -62,7 +63,30 @@ export class Room {
     const attackResult: AttackResult[] = this.roomUsers[enemyIdx].attack(x, y);
     if (!attackResult.length) return [];
 
-    return this.getAttackDataResp(indexPlayer, attackResult);
+    const attackDataResp = this.getAttackDataResp(indexPlayer, attackResult);
+
+    const botAttackDataResp: AttackDataResp[] = this.getBotAttackDataResp(indexPlayer);
+    attackDataResp.push(...botAttackDataResp);
+
+    return attackDataResp;
+  }
+
+  public getBotAttackDataResp(indexPlayer: number): AttackDataResp[] {
+    if (this.roomUsers[1].index !== BOT_INDEX) return [];
+    if (indexPlayer === 1) return [];
+
+    const botAttackDataRespArr: AttackDataResp[] = [];
+
+    const botAttackDataResp: AttackDataResp[] = this.randomAttack(1);
+    if (!botAttackDataResp.length) return [];
+    botAttackDataRespArr.push(...botAttackDataResp);
+
+    if (botAttackDataResp[0].status !== AttackStatus.Miss) {
+      const attackDataResp: AttackDataResp[] = this.getBotAttackDataResp(indexPlayer);
+      botAttackDataRespArr.push(...attackDataResp);
+    }
+
+    return botAttackDataRespArr;
   }
 
   private getAttackDataResp(indexPlayer: number, attackResult: AttackResult[]): AttackDataResp[] {
@@ -85,7 +109,12 @@ export class Room {
     const attackResult: AttackResult[] = this.roomUsers[enemyIdx].randomAttack();
     if (!attackResult.length) return [];
 
-    return this.getAttackDataResp(indexPlayer, attackResult);
+    const attackDataResp = this.getAttackDataResp(indexPlayer, attackResult);
+
+    const botAttackDataResp: AttackDataResp[] = this.getBotAttackDataResp(indexPlayer);
+    attackDataResp.push(...botAttackDataResp);
+
+    return attackDataResp;
   }
 
   public checkWinner(): number {

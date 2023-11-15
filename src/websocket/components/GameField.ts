@@ -30,7 +30,12 @@ export class GameField {
     const shipsMatrix: Field = createEmptyMatrix(cell);
     this.shipsMatrix = shipsMatrix.map((row: Row, y: number) => {
       return row.map((cell: Cell, x: number) => {
-        return { ...cell, position: { x, y } };
+        return {
+          ...cell,
+          otherShipParts: [],
+          aroundShipCellsArr: [],
+          position: { x, y },
+        };
       });
     });
   }
@@ -41,18 +46,14 @@ export class GameField {
 
     const shipPartsArr: Cell[] = [];
 
-    const firstShipPart: Cell = this.shipsMatrix[y][x];
-    firstShipPart.isShipPart = true;
-    shipPartsArr.push(firstShipPart);
-
-    for (let index = 1; index < length; index++) {
-      const otherShipPart: Cell = direction
+    for (let index = 0; index < length; index++) {
+      const shipPart: Cell = direction
         ? this.shipsMatrix[y + index][x]
         : this.shipsMatrix[y][x + index];
 
-      otherShipPart.isShipPart = true;
+      shipPart.isShipPart = true;
 
-      shipPartsArr.push(otherShipPart);
+      shipPartsArr.push(shipPart);
     }
 
     const aroundShipCellsArr: Cell[] = [];
@@ -97,12 +98,14 @@ export class GameField {
       const killedCells: AttackResult[] = [cell, ...cell.otherShipParts].map((cell: Cell) => {
         return { position: cell.position, status: AttackStatus.Killed };
       });
+
       const missedCells: AttackResult[] = cell.aroundShipCellsArr
         .filter((cell: Cell) => !cell.isShot)
         .map((cell: Cell) => {
+          cell.isShot = true;
           return { position: cell.position, status: AttackStatus.Miss };
         });
-      cell.aroundShipCellsArr.forEach((cell: Cell) => (cell.isShot = true));
+
       return [...killedCells, ...missedCells];
     }
 
@@ -119,7 +122,7 @@ export class GameField {
 
   public getRandomPosition(): ShipPosition | null {
     const availableCellsArr: Cell[] = this.shipsMatrix.flat().filter((cell: Cell) => !cell.isShot);
-    if (availableCellsArr.length) return null;
+    if (!availableCellsArr.length) return null;
 
     const randomCellIdx: number = Math.floor(Math.random() * availableCellsArr.length);
 
