@@ -1,6 +1,6 @@
 import process from 'process';
-import { httpServer } from './src/http_server/index.js';
-import { WSServer } from './src/websocket/index.ts';
+import { httpServer } from './src/http_server/index';
+import { WSServer } from './src/websocket/index';
 
 const HTTP_PORT = 8181;
 const WSS_PORT = 3000;

@@ -2,10 +2,10 @@
     "name": "ws_task",
     "version": "1.0.0",
     "description": "Template for the WebSocket remote control task",
-    "main": "index.js",
+    "main": "index.ts",
     "scripts": {
-        "start": "node ./index.js",
-        "start:dev": "ts-node ./index.js",
+        "start": "webpack --mode production --config webpack.config.js && node dist/main.js",
+        "start:dev": "nodemon ./index.ts",
         "lint": "eslint --ext tsx,ts src",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

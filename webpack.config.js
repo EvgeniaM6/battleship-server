@@ -7,7 +7,7 @@ module.exports = (env, options) => {
   const isProduction = options.mode === 'production';
   const config = {
     target: 'node',
-    entry: './src/index.js',
+    entry: './index.ts',
     plugins: [
       new CleanWebpackPlugin(),
       new EslintPlugin({ extensions: ['ts', 'js'] }),
@@ -52,6 +52,10 @@ module.exports = (env, options) => {
         buffer: false,
       },
       extensions: ['.ts', '.js', '.json'],
+    },
+    externals: {
+      bufferutil: "bufferutil",
+      "utf-8-validate": "utf-8-validate",
     }
   };
   return config;
